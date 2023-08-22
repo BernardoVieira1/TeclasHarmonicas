@@ -1,18 +1,30 @@
+//PARA USAR C++
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
+
+//HABILITA AS FUNÇÕES _kbhit() E _getch()
 #include <conio.h>
+//HABILITAR O USO DA FUNÇÃO SYSTEM()
 #include <stdlib.h>
+
+//PARA PODER USAR PRORPIEDADES EXTRAS QUE O WINDOS POSSIBILITA, ALTERAR O TERMINAL, POSIÇÃO, CORES...
 #include <windows.h>
 #include <string.h>
+//HABILITAR CARACTERES ESPECIAIS
 #include <locale.h>
+#include <fstream>
+//BIBLIOTECA USADA PARA O AJUDAR NO TEMPO DO JOGO
+#include <ctime>
+#include <time.h>
 
 
 using namespace std;
 
-//string nome;
+//COIDGO PARA ATIVAR AS CORES NO TERMINAL
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
+string nome;
 
+//FUNÇÃO PARA DEIXAR O CMD EM TELA CHEIA
 void setFullscreen() {
 	keybd_event(VK_MENU,0x36,0,0);
     keybd_event(VK_RETURN,0x1C,0,0);
@@ -20,7 +32,7 @@ void setFullscreen() {
     keybd_event(VK_MENU,0x38,KEYEVENTF_KEYUP,0);
 }
 
-
+//FUNÇÃO PARA POSICIONAR OS ELEMENTOS EM DETERMINADO CANTO DA TELA
 void gotoxy(int x, int y) {
     COORD coord;
     coord.X = x;
@@ -28,6 +40,8 @@ void gotoxy(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
+
+//A PARTITR DA LETRA GERADA LAEATORIAMENTE, ELA ENTRA NO SWITCH E É TRANSFORMADA EM DESENHO
 void desenhoTecla(char letra){
 	int linha = 20;
 	int coluna = 95;
@@ -702,10 +716,12 @@ void desenhoTecla(char letra){
 	}
 }
 
+//AQUI È ONDE FICA A AMOSTRAGEM DOS CORAÇÕES
 void coracoes(int life){
 	int col = 200;
 	int lin = -1;
 	if (life == 1){
+		SetConsoleTextAttribute(hConsole, 12);
 		gotoxy(col, lin + 1);
 		cout << " _  _" << endl;
 		gotoxy(col, lin + 2);
@@ -716,7 +732,9 @@ void coracoes(int life){
 		cout << " \\  /" << endl;
 		gotoxy(col, lin + 5);
 		cout << "  \\/" << endl;
+		SetConsoleTextAttribute(hConsole, 7);
 	}else if (life == 2){
+		SetConsoleTextAttribute(hConsole, 12);
 		gotoxy(col - 5, lin + 1);
 		cout << " _  _" << endl;
 		gotoxy(col - 5, lin + 2);
@@ -738,9 +756,11 @@ void coracoes(int life){
 		cout << " \\  /" << endl;
 		gotoxy(col, lin + 5);
 		cout << "  \\/" << endl;
+		SetConsoleTextAttribute(hConsole, 7);
 		
 	}else if(life == 3){
 		
+		SetConsoleTextAttribute(hConsole, 12);
 		gotoxy(col - 10, lin + 1);
 		cout << " _  _" << endl;
 		gotoxy(col - 10, lin + 2);
@@ -773,20 +793,44 @@ void coracoes(int life){
 		cout << " \\  /" << endl;
 		gotoxy(col, lin + 5);
 		cout << "  \\/" << endl;
+		SetConsoleTextAttribute(hConsole, 7);
 	}else{
 		gotoxy(col - 5, lin + 1);
-		cout << "PERDEU CARAI";
+		cout << "ACABOU AS VIDAS";
 	}
 	
 	
 }
 
+//TELA PARA QUANDO O JOGADOR PERDE
+void gameover(){
+	system("cls");
+	int lin = 20;
+	int col = 95;
+	gotoxy(col + - 20, lin + 0);
+	cout << " ####      ##     ##   ##  #######            #####   ##   ##  #######  ######" << endl;
+	gotoxy(col + - 20, lin + 1);
+	cout << "##  ##    ####    ### ###   ##   #           ##   ##  ##   ##   ##   #   ##  ##" << endl;
+	gotoxy(col + - 20, lin + 2);
+	cout << "##       ##  ##   #######   ## #             ##   ##   ## ##    ## #     ##  ##" << endl;
+	gotoxy(col + - 20, lin + 3);
+	cout << "##       ##  ##   #######   ####             ##   ##   ## ##    ####     #####" << endl;
+	gotoxy(col + - 20, lin + 4);
+	cout << "##  ###  ######   ## # ##   ## #             ##   ##    ###     ## #     ## ##" << endl;
+	gotoxy(col + - 20, lin + 5);
+	cout << " ##  ##  ##  ##   ##   ##   ##   #           ##   ##    ###     ##   #   ##  ##" << endl;
+	gotoxy(col + - 20, lin + 6);
+	cout << "  #####  ##  ##   ##   ##  #######            #####      #     #######  #### ##" << endl;
+}
+
+//LOCAL ONDE DE FATO OCORRE AS REGRAS PARA O JOGO FUNCIONAR
 void jogar(int difi){
 	
 	//prepara a função rand()
 	srand(static_cast<unsigned int>(time(NULL)));
 	
 	//variaveis para monitorar pontuação, vidas e etc...
+
 	int pontos = 0;
 	int life = 3;
 	int  jogou = 1;
@@ -794,9 +838,14 @@ void jogar(int difi){
     char userInput;
     bool correct = true;
 
-
+	//INICIA VARIAVEIS PARA CALCULAR O TEMPO	
+	time_t start_time, end_time;
+    double elapsed_time;
+    int running = 0;
+	
+	//COMEÇA A CONTAR O TEMPO QUE O JOGADOR VAI LEVAR
+	time(&start_time);
     while (correct) {
-
 		//gera uma letra maiuscula aleatoria
         currentKey = static_cast<char>('A' + rand() % 26);
 		
@@ -817,16 +866,27 @@ void jogar(int difi){
 		//controle para saber se o jogador efetuou a jogada
 		jogou++;
 
-		cout << "\nvoce digitou2: " << userInput << endl;
-		cout << "jogou é igual a: " << jogou << endl;
-		cout << "Life é igual a: " << life << endl;
+		gotoxy(0,0);
 		cout << "seus pontos são: " << pontos << endl;
 
 		
 		//verifica as vidas do jogador
 		if(life == 0){
-			system("COLOR C7");
-			cout << "VC PERDEU CORNO\n";
+			system("COLOR 07");
+
+			//FINALIZA O TEMPORIZADOR
+			time(&end_time);
+
+			//PEGA A DIFERENÇA DE TEMPO ENTRE O INICIO E O FIM
+			elapsed_time = difftime(end_time, start_time);
+
+			//APRESENTAÇÃO FINAL COM TELA DE GAMEOVER
+			gameover();
+			cout << nome << endl;
+			cout << "VOCÊ FEZ " << pontos << " PONTOS." << endl;
+			printf("COM O TEMPO DE: %.2f segundos\n", elapsed_time);
+			system("pause");
+			
 			correct = false;
 		}
 		
@@ -835,9 +895,9 @@ void jogar(int difi){
 			Sleep(2000);
 
 		}else if(difi == 2){
-			Sleep(1500);
-		}else if(difi == 3){
 			Sleep(1000);
+		}else if(difi == 3){
+			Sleep(500);
 		}else{
 			Sleep(1000);
 
@@ -853,7 +913,7 @@ void jogar(int difi){
 			//verifica se a tecla apertada está correta
 			if(userInput != currentKey){
 				Sleep(200);
-				system("COLOR C7");
+				system("COLOR 47");
 				jogou = 1;
 				life--;
 
@@ -861,7 +921,6 @@ void jogar(int difi){
 				Sleep(200);
 				pontos = pontos + 10;
 				system("COLOR 20");
-				cout << "sempre apareço";
 				cout << "pressionada: " << userInput << endl;
 				jogou = 1;
 			}
@@ -876,9 +935,32 @@ void jogar(int difi){
 }
 
 //tela de como jogar
-void comoJogar(){
-	cout << "Esse é o tutorial de como jogar :)\n";
-	system("Pause");
+void comoJogar()
+{
+	int lin = 20;
+	int col = 95;
+	gotoxy(col + - 50, lin - 13);
+	cout << "####                                          ####                                                         ####" << endl;
+	gotoxy(col + - 50, lin - 12);
+	cout << "##  ##                                          ##                                                         ##  ##" << endl;
+	gotoxy(col + - 50, lin - 11);
+	cout << "##        ####    ##  ##    ####                 ##    ####     ### ##   ####    ######                         ##" << endl;
+	gotoxy(col + - 50, lin - 10);
+	cout << "##       ##  ##   #######  ##  ##                ##   ##  ##   ##  ##       ##    ##  ##                       ##" << endl;
+	gotoxy(col + - 50, lin - 9);
+	cout << "##       ##  ##   ## # ##  ##  ##            ##  ##   ##  ##   ##  ##    #####    ##                          ##" << endl;
+	gotoxy(col + - 50, lin - 8);
+	cout << " ##  ##  ##  ##   ##   ##  ##  ##            ##  ##   ##  ##    #####   ##  ##    ##                            " << endl;
+	gotoxy(col + - 50, lin - 7);
+	cout << "  ####    ####    ##   ##   ####              ####     ####        ##    #####   ####                         ##" << endl;
+	gotoxy(col + - 50, lin - 6);
+	cout << "                                                                #####                                           " << endl;
+
+	gotoxy(col + - 10, lin - 2 );
+	cout << " O jogador tera tres coracoes (vidas), caso o numero de coracoes acabem, o jogador perdera o jogo." << endl;
+	gotoxy(col + - 10 , lin - 1 );
+	cout << " O jogo consiste em que o jogador digite (uma unica vez) a tecla que aparecera na tela." << endl;
+	system("pause");
 
 }
 
@@ -890,23 +972,29 @@ void menu(int opc){
 	int col = 95;
 
 
-	gotoxy(col,lin + 1);
-	cout << "#################\n";
-	gotoxy(col,lin + 2);
-	cout << "Teclas harmonicas\n";
-	gotoxy(col,lin + 3);
-	cout << "#################\n";
+	
+	gotoxy(col - 65, lin - 13);
+	cout << "######   #######    ####   ####       ##      #####            ##   ##    ##     ######   ##   ##   #####   ##   ##   ####      ####     ##      ##### \n";
+	gotoxy(col - 65, lin - 12);
+	cout << "# ## #    ##   #   ##  ##   ##       ####    ##   ##           ##   ##   ####     ##  ##  ### ###  ##   ##  ###  ##    ##      ##  ##   ####    ##   ## \n";
+	gotoxy(col - 65, lin - 11);
+	cout << "  ##      ## #    ##        ##      ##  ##   #                 ##   ##  ##  ##    ##  ##  #######  ##   ##  #### ##    ##     ##       ##  ##   #      \n";
+	gotoxy(col - 65, lin - 10);
+	cout << "  ##      ####    ##        ##      ##  ##    #####            #######  ##  ##    #####   #######  ##   ##  ## ####    ##     ##       ##  ##    ##### \n";
+	gotoxy(col - 65, lin - 9);
+	cout << "  ##      ## #    ##        ##   #  ######        ##           ##   ##  ######    ## ##   ## # ##  ##   ##  ##  ###    ##     ##       ######        ## \n";
+	gotoxy(col - 65, lin - 8);
+	cout << "  ##      ##   #   ##  ##   ##  ##  ##  ##   ##   ##           ##   ##  ##  ##    ##  ##  ##   ##  ##   ##  ##   ##    ##      ##  ##  ##  ##   ##   ## \n";
+	gotoxy(col - 65, lin - 7);
+	cout << " ####    #######    ####   #######  ##  ##    #####            ##   ##  ##  ##   #### ##  ##   ##   #####   ##   ##   ####      ####   ##  ##    ##### \n";
+
 
 	gotoxy(col,lin + 4);
 	cout << (opc == 1 ? "> " : "  ") << "[1] JOGAR" << endl;
 	gotoxy(col,lin + 5);
-    cout << (opc == 2 ? "> " : "  ") << "[2] RANKING" << endl;
+    cout << (opc == 2 ? "> " : "  ") << "[4] COMO JOGAR" << endl;
 	gotoxy(col,lin + 6);
-    cout << (opc == 3 ? "> " : "  ") << "[3] CONFIGURAÇÕES" << endl;
-	gotoxy(col,lin + 7);
-    cout << (opc == 4 ? "> " : "  ") << "[4] COMO JOGAR" << endl;
-	gotoxy(col,lin + 8);
-    cout << (opc == 5 ? "> " : "  ") << "[5] SAIR" << endl;
+    cout << (opc == 3 ? "> " : "  ") << "[5] SAIR" << endl;
 	
 }
 
@@ -916,12 +1004,21 @@ void menuJogo(int opc){
 	int lin = 20;
 	int col = 95;
 
-	gotoxy(col,lin + 1);
-	cout << "#################\n";
-	gotoxy(col,lin + 2);
-	cout << "Escolha a dificuldade de jogo\n";
-	gotoxy(col,lin + 3);
-	cout << "#################\n";
+	gotoxy(col-85, lin - 13);
+	cout << " #######   #####     ####    #####   ####     ##   ##    ##                ##              #####     ####    #######   ####      ####   ##   ##  ####     #####      ##     #####     ####### " << endl;
+	gotoxy(col-85, lin - 12);
+	cout << " ##   #   ##   ##   ##  ##  ##   ##   ##      ##   ##   ####              ####              ## ##     ##      ##   #    ##      ##  ##  ##   ##   ##       ## ##    ####     ## ##    ##   # " << endl;
+	gotoxy(col-85, lin - 11);
+	cout << " ## #     #        ##       ##   ##   ##      ##   ##  ##  ##            ##  ##             ##  ##    ##      ## #      ##     ##       ##   ##   ##       ##  ##  ##  ##    ##  ##   ## # " << endl;
+	gotoxy(col-85, lin - 10);
+	cout << " ####     #####    ##       ##   ##   ##      #######  ##  ##            ##  ##             ##  ##    ##      ####      ##     ##       ##   ##   ##       ##  ##  ##  ##    ##  ##   #### " << endl;
+	gotoxy(col-85, lin - 9);
+	cout << " ## #          ##  ##       ##   ##   ##   #  ##   ##  ######            ######             ##  ##    ##      ## #      ##     ##       ##   ##   ##   #   ##  ##  ######    ##  ##   ## # " << endl;
+	gotoxy(col-85, lin - 8);
+	cout << " ##   #   ##   ##   ##  ##  ##   ##   ##  ##  ##   ##  ##  ##            ##  ##             ## ##     ##      ##        ##      ##  ##  ##   ##   ##  ##   ## ##   ##  ##    ## ##    ##   # " << endl;
+	gotoxy(col-85, lin - 7);
+	cout << " #######   #####     ####    #####   #######  ##   ##  ##  ##            ##  ##            #####     ####    ####      ####      ####    #####   #######  #####    ##  ##   #####    ####### " << endl;
+
 
 	gotoxy(col,lin + 4);
 	cout << (opc == 1 ? "> " : "  ") << "[1] FACIL" << endl;
@@ -932,6 +1029,11 @@ void menuJogo(int opc){
 	gotoxy(col,lin + 7);
     cout << (opc == 4 ? "> " : "  ") << "[4] VOLTAR" << endl;
 
+}
+
+void NnJogador(){
+	cout << "DIGITE O SEU NOME: ";
+	cin >> nome;
 }
 
 void jogo(){
@@ -958,14 +1060,19 @@ void jogo(){
 			switch (opc){
 				case 1:
 					system("cls");
+
+					NnJogador();
+
 					jogar(1);
 					break;
 				case 2:
 					system("cls");
+					NnJogador();
 					jogar(2);
 					break;
 				case 3:
 					system("cls");
+					NnJogador();
 					jogar(3);
 					
 					break;
@@ -993,6 +1100,8 @@ int main(){
 	//deixar a linguagem padrão Brasil
 	setlocale(LC_ALL, "pt_BR.utf8");
 
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 	//função para inicar o jogo em tela cheia
 	setFullscreen();
 	//Em alguns casos o CMD não funiona o setlocale, então tem que rodar esse comando
@@ -1015,7 +1124,7 @@ int main(){
 				opc--;
 			}
 		}else if(tecla == 80){
-			if(opc < 5){
+			if(opc < 3){
 				opc++;
 			}
 		}else if(tecla == 13){
@@ -1027,22 +1136,13 @@ int main(){
 					break;
 				case 2:
 					system("cls");
-					cout << "opc 2";
-					break;
-				case 3:
-					system("cls");
-					cout << "opc 3";
-					break;
-				case 4:
-					system("cls");
 					comoJogar();
 					break;
-				case 5:
+				case 3:
 					system("cls");
 					opc = 1000;
 					cout << "adeus :)";
 					break;
-				
 				default:
 					cout << "opção não existe :)";
 					break;
